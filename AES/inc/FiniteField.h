@@ -17,11 +17,15 @@ public:
 	FiniteField(const char& c): element(c) { }
 	operator char() const { return element; }
 
-	char ffAdd(const char x) { return element = ffAdd(element, x); }
-	static char ffAdd(const char a, const char b) { return a ^ b; }
+	FiniteField operator +(const FiniteField& ff) const { return element ^ ff.element; }
+	FiniteField operator *(const FiniteField& ff) const { return ffMultiply(element, ff.element); }
 
-	char ffMultiply(const char x) { return ffMultiply(element, x); }
-	static char ffMultiply(const char a, const char b) {
+private:
+	FiniteField ffAdd(const FiniteField x) { return element = ffAdd(element, x); }
+	static FiniteField ffAdd(const FiniteField a, const FiniteField b) { return a + b; }
+
+	FiniteField ffMultiply(const FiniteField x) { return ffMultiply(element, x); }
+	static FiniteField ffMultiply(const FiniteField a, const FiniteField b) {
 		char sum = 0x00, running = a;
 		for(char i = 0x01; i & 0x0FF; i = i << 1){
 			if(i & b) sum += running;
@@ -30,11 +34,10 @@ public:
 		return sum;
 	}
 
-private:
-
-	static char xtime(const char c) {
-		char x = c << 1;
-		if(x & 0x0100) x = x ^ m;
+	static FiniteField xtime(const FiniteField c) {
+		bool overflow = c.element & 0x80;
+		char x = c.element << 1;
+		if(overflow) x = x ^ m;
 		return x;
 	}
 };

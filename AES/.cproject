@@ -44,6 +44,7 @@
 					</folderInfo>
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1888113247.1058153152" name="/" resourcePath="inc">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.1324844356" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug" unusedChildren="">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.412765871" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler.351967878">
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1117498456" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -54,7 +55,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.125798552" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker.145901438"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1856414548" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver.1316521556"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.719632114" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler.756168148">
-								<option id="gnu.both.asm.option.include.paths.1594371952" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.1594371952" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../${project_classpath:${ProjName}}/inc&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2094572858" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -146,4 +147,5 @@
 			<resource resourceType="PROJECT" workspacePath="/AES"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
