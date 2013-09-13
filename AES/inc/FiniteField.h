@@ -14,9 +14,12 @@ class FiniteField {
 	char element;
 
 public:
+	FiniteField(const FiniteField& ff): element(ff.element) { }
 	FiniteField(const char& c): element(c) { }
 	operator char() const { return element; }
 
+	bool operator ==(const FiniteField& ff) const { return element == ff.element; }
+	bool operator !=(const FiniteField& ff) const { return !(this == ff); }
 	FiniteField operator +(const FiniteField& ff) const { return element ^ ff.element; }
 	FiniteField operator *(const FiniteField& ff) const { return ffMultiply(element, ff.element); }
 

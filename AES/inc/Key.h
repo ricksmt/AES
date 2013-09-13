@@ -8,6 +8,7 @@
 #ifndef KEY_H_
 #define KEY_H_
 
+template <int Nb = AES::Nb>
 class Key{
 
 	Rcon[] = { 0x00000000,// Rcon[] is 1-based, so the first entry is just a place holder
@@ -26,23 +27,62 @@ class Key{
 		0xE8000000, 0xCB000000, 0x8D000000};
 
 protected:
-	static const int Nb = AES::Nb;
 	int Nk;
-
 private:
 	FiniteField state[Nb][Nk];
 
 public:
-	Key(std::istream& stream);
+	Key(std::istream& stream) {
+		// Get the length
+		stream.seekg(stream.end);
+	    int length = stream.tellg();
+	    stream.seekg (0, stream.beg);
+	    Nk = length / Nb + (length % Nb ? 1 : 0);
+
+	    // Initialize state
+	    for(int i = 0; i < Nb; i++) state[i] = new FiniteField[Nk];
+	    for(int i = 0; i < byteLength(); i++){
+	    	if(stream.good()) stream.read((char*)(state[i & Nb] + i / Nb), 1);
+	    	else state[i & Nb][i / Nb] = 0;// Zero out the excess space
+	    }
+	}
+	const FiniteField[] operator[](const unsigned int& index) { return state[index]; }
 
 	// The number of bits in this block
 	int length() const { return bitLength(); }
 	int bitLength() const { return byteLength() << 3; }
 	int byteLength() const { return Nb * Nk; }
 
+	Key& expand(int rconIndex) const {
+		Key key = rotWord(Nk);
+		key = key.subWord(Nk);
+		for(int i = 0; i < Nk; i++) {
+			for(int j = 0; j < Nb; j++) {
+				key[j][i] = [j][i] +
+			}
+		}
+		return key;
+	}
+
 protected:
-	void subWord() const { }
-	void rotWord() const { }
+	Key subWord(int index) const {
+		Key key = this;
+		for(int i = 0; i < Nb; i++) {
+			int x = (key[i][index] & 0xF0) >> 4, y = key[i][index] & 0x0F;
+			key[i][index] = key[i][index] * AES::Sbox[x][y];
+		}
+		return key;
+	}
+
+	Key rotWord(int index) const {
+		Key key = this;
+		FiniteField temp = key[0][index];
+		for(int i = 1; i < Nb; i++) {
+			key[i - 1][index] = key[i][index];
+		}
+		key[Nb - 1][index] = temp;
+		return key;
+	}
 };
 
 
