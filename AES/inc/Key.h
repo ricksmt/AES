@@ -11,7 +11,7 @@
 template <int Nb = AES::Nb>
 class Key{
 
-	Rcon[] = { 0x00000000,// Rcon[] is 1-based, so the first entry is just a place holder
+	static FiniteField Rcon[] = { 0x00000000,// Rcon[] is 1-based, so the first entry is just a place holder
 		0x01000000, 0x02000000, 0x04000000, 0x08000000,
 		0x10000000, 0x20000000, 0x40000000, 0x80000000,
 		0x1B000000, 0x36000000, 0x6C000000, 0xD8000000,
@@ -31,7 +31,35 @@ protected:
 private:
 	FiniteField state[Nb][Nk];
 
+	class Word{
+		FiniteField word[Nb];
+
+	public:
+		FiniteField operator [](int index) const { return word[index]; }
+
+	protected:
+		void subWord() const {
+			for(int i = 0; i < Nb; i++) {
+				int x = (this[i] & 0xF0) >> 4, y = this[i] & 0x0F;
+				this[i] = this[i] * AES::Sbox[x][y];
+			}
+		}
+
+		void rotWord() const {
+			FiniteField temp = this[0];
+			for(int i = 1; i < Nb; i++) this[i - 1] = this[i];
+			this[Nb - 1] = temp;
+		}
+	};
+
 public:
+	Key(const Key& key): Nk(key.Nk) {
+		for(int i = 0; i < Nb; i++) {
+			for(int j = 0; j < Nk; j++) {
+				state[i][j] = key.state[i][j];
+			}
+		}
+	}
 	Key(std::istream& stream) {
 		// Get the length
 		stream.seekg(stream.end);
@@ -53,34 +81,33 @@ public:
 	int bitLength() const { return byteLength() << 3; }
 	int byteLength() const { return Nb * Nk; }
 
-	Key& expand(int rconIndex) const {
-		Key key = rotWord(Nk);
-		key = key.subWord(Nk);
-		for(int i = 0; i < Nk; i++) {
+	Word getWord(int index) const {
+		Word w;
+		for(int i = 0; i < Nb; i++) w[i] = state[i][index];
+		return w;
+	}
+	void setWord(Word w, int index) const {
+		for(int i = 0; i < Nb; i++) state[i][index] = w[i];
+	}
+
+	//Methods
+	Key expand(int rconIndex) const {
+		Key key = this;
+		Word word = getWord(Nk - 1);
+		word.rotWord();
+		word.subWord();
+		word[0] = word[0] + Rcon[rconIndex] >> 24;
+		key.setWord(word, 0);
+		for(int i = 1; i < Nk; i++) {
 			for(int j = 0; j < Nb; j++) {
-				key[j][i] = [j][i] +
+				FiniteField ff = key[j][i - 1];
+				if(Nk == 8 && i == 4) {
+					int x = (ff & 0xF0) >> 4, y = ff & 0x0F;
+					ff = ff + AES::Sbox[x][y];
+				}
+				key[j][i] = key[j][i] + ff;
 			}
 		}
-		return key;
-	}
-
-protected:
-	Key subWord(int index) const {
-		Key key = this;
-		for(int i = 0; i < Nb; i++) {
-			int x = (key[i][index] & 0xF0) >> 4, y = key[i][index] & 0x0F;
-			key[i][index] = key[i][index] * AES::Sbox[x][y];
-		}
-		return key;
-	}
-
-	Key rotWord(int index) const {
-		Key key = this;
-		FiniteField temp = key[0][index];
-		for(int i = 1; i < Nb; i++) {
-			key[i - 1][index] = key[i][index];
-		}
-		key[Nb - 1][index] = temp;
 		return key;
 	}
 };
