@@ -13,7 +13,7 @@
 #include "Block.h"
 #include "Key.h"
 
-namespace AES{
+namespace AES {
 
 	template <int Nb>
 	Block<Nb> cipher(const Block<Nb>& b, const Key<Nb>& k) {
@@ -23,14 +23,14 @@ namespace AES{
 		block.AddRoundKey(key);
 
 		for(int i = 1; i < Nr(b, k) - 1; i++) {
-			key = key.expand(i);
+//			key = key.expand(i);// TODO
 			block.SubBytes();
 			block.ShiftRows();
 			block.MixColumns();
 			block.AddRoundKey(key);
 		}
 
-		key = key.expand(Nr(b, k) - 1);
+//		key = key.expand(Nr(b, k) - 1);// TODO
 		block.SubBytes();
 		block.ShiftRows();
 		block.AddRoundKey(key);
@@ -46,14 +46,14 @@ namespace AES{
 		block.AddRoundKey(key);
 
 		for(int i = 1; i < Nr(b, k) - 1; i++) {
-			key = key.expand(i);
+//			key = key.expand(i);// TODO
 			block.InvShiftRows();
 			block.InvSubBytes();
 			block.AddRoundKey(key);
 			block.InvMixColumns();
 		}
 
-		key = key.expand(Nr(b, k) - 1);
+//		key = key.expand(Nr(b, k) - 1);// TODO
 		block.InvShiftRows();
 		block.InvSubBytes();
 		block.AddRoundKey(key);

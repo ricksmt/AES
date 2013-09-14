@@ -25,19 +25,19 @@ namespace AES {
 		Column array[Nb];
 
 	public:
-		Block(const Block& block) { for(int i = 0; i < Nb; i++) array[i] = block[i]; }
-		Block(std::istream& stream) {
+		Block(const Block<Nb>& block) { for(int i = 0; i < Nb; i++) array[i] = block.array[i]; }
+		Block(std::string& s) {
 			// Initialize state
-			for(int i = 0; i < 4; i++) array[i] = new FiniteField[Nb];
-			for(int i = 0; i < byteLength(); i++){
-				if(stream.good()) stream.read((char*)(array[i & 0x03] + i >> 2), 1);
-				else array[i & 0x03][i >> 2] = 0;// Zero out the excess space
+			for(int i = 0; i < s.length() / 4; i++) {
+				for(int j = 0; j < Nb; j++) {
+					array[i][j] = s[i * 4 + j];
+				}
 			}
 		}
 
-		Block& operator =(const Block& b) {
+		Block<Nb>& operator =(const Block<Nb>& b) {
 			if (this != &b) {
-				for(unsigned i = 0; i < Nb; i++) word(i) = b.word(i);
+				for(unsigned i = 0; i < Nb; i++) word(i) = b.array[i];
 			}
 			return *this;
 		}
@@ -45,8 +45,8 @@ namespace AES {
 			for(int i = 0; i < Nb; i++) if(array[i] != block.array[i]) return false;
 			return true;
 		}
-		bool operator !=(const Block& block) const { return !(*this == block); }
-		const Row& operator[](unsigned index) {
+		bool operator !=(const Block<Nb>& block) const { return !(*this == block); }
+		Row& operator[](unsigned index) {
 			Row row;
 			for(unsigned i = 0; i < Nb; i++) row[i] = array[i][index];
 			return row;
@@ -58,7 +58,6 @@ namespace AES {
 		int byteLength() const { return Nb << 2; }
 		Column& word(unsigned index) { return array + index; }
 
-	protected:
 		// Encryption methods
 		void SubBytes() {
 			for(int i = 0; i < 4; i++){
@@ -98,11 +97,34 @@ namespace AES {
 		}
 
 		// Decryption methods
-		void InvSubBytes();
+		void InvSubBytes() {
+			for(int i = 0; i < 4; i++){
+				for(int j = 0; j < Nb; j++){
+					FiniteField c = array[i][j];
+					int x = (c & 0xF0) >> 4, y = c & 0x0F;
+					array[i][j] = AES::InvSbox[x][y];
+				}
+			}
+		}
 
-		void InvShiftRows();
+		void InvShiftRows() {
+			std::stack<FiniteField> stack;
+			for(int i = 1; i < 4; i++){
+				for(int j = Nb; Nb - j < i; j--) stack.push(array[i][j - 1]);
+				for(int j = Nb - i; j >= i; j--) array[i][j - 1] = array[i][j - 2];
+				for(int j = i; j > 0; j--, stack.pop()) array[i][j - 1] = stack.top();
+			}
+		}
 
-		void InvMixColumns();
+		void InvMixColumns() {
+			for(int i = 0; i < Nb; i++){
+				FiniteField temp[] = {array[0][i], array[1][i], array[2][i], array[3][i]};
+				array[0][i] = 0x0E * temp[0] ^ 0x0B * temp[1] ^ 0x0D * temp[2] ^ 0x09 * temp[3];
+				array[1][i] = 0x09 * temp[0] ^ 0x0E * temp[1] ^ 0x0B * temp[2] ^ 0x0D * temp[3];
+				array[2][i] = 0x0D * temp[0] ^ 0x09 * temp[1] ^ 0x0E * temp[2] ^ 0x0B * temp[3];
+				array[3][i] = 0x0B * temp[0] ^ 0x0D * temp[1] ^ 0x09 * temp[2] ^ 0x0E * temp[3];
+			}
+		}
 	};
 
 	template <int Nb>

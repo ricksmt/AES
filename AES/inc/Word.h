@@ -12,8 +12,13 @@
 
 namespace AES {
 
+	template <int Nb>
+	class Key;
+
 	template <int size>
 	class Word {
+		template <int Nb>
+		friend class Key;
 
 		FiniteField array[size];
 
@@ -29,7 +34,7 @@ namespace AES {
 			}
 			return *this;
 		}
-		FiniteField& operator [](unsigned index) { return array + index; }
+		FiniteField& operator [](unsigned index) { return array[index]; }
 		bool operator ==(const Word<size>& w) const {
 			for(int i = 0; i < size; i++) if(array[i] != w.array[i]) return false;
 			return true;

@@ -18,7 +18,7 @@
 using namespace std;
 using namespace AES;
 
-vector<string> getFileNames(string path = "../tests") {
+vector<string> getFileNames(string path = "tests") {
 
     DIR* dir;
     dirent* pdir;
@@ -33,6 +33,9 @@ int main() {
 	vector<string> filenames = getFileNames();
 	for(unsigned i = 0; i < filenames.size(); i++) {
 		string filename = filenames[i];
+		if(filename[0] == '.') continue;
+		filename = "tests/" + filename;
+		cout << filename << endl;
 
 		// Setup
 		ifstream file(filename.c_str());
@@ -40,25 +43,22 @@ int main() {
 		getline(file, s);
 		cout << s << endl;
 		s = s.substr(s.find(' ') + 1);
-		stringstream ss(s);
-		Block<AES::Nb> input(ss);
+		Block<Nb> input(s);
 		getline(file, s);
 		cout << s << endl;
 		s = s.substr(s.find(' ') + 1);
-		ss << s;
-		Key<AES::Nb> key(ss);
+		Key<Nb> key(s);
 		getline(file, s);
 		cout << s << endl;
 		s = s.substr(s.find(' ') + 1);
-		ss << s;
-		Block<AES::Nb> output(ss);
+		Block<Nb> output(s);
 
 		// Testing
 		cout << endl;
 		cout << "ENCRYPTION";
-		cout << '\t' << (AES::cipher<AES::Nb>(input, key) == output ? "PASSED" : "FAILED");
+		cout << '\t' << (cipher(input, key) == output ? "PASSED" : "FAILED");
 		cout << "DECRYPTION";
-		cout << '\t' << (AES::invCipher<AES::Nb>(output, key) == input ? "PASSED" : "FAILED");
+		cout << '\t' << (invCipher(output, key) == input ? "PASSED" : "FAILED");
 		cout << endl;
 	}
 	return 0;
